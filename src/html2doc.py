@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Scott Joiner
-
 import os
 import shutil
 import argparse
@@ -142,6 +139,17 @@ def process_element(elem, doc):
 
         if 'lecture-attachment-type-pdf_embed' in elem_classes:
             handle_pdf_embed(elem, doc)
+
+        elif 'lecture-attachment-type-audio' in elem_classes:
+            audio_name = "[Audio]"
+            name_span = elem.find('span', class_='audioloader__name')
+            if name_span and name_span.string:
+                audio_name = f"[{name_span.string.strip()}]"
+            doc.add_paragraph(audio_name)
+
+        elif 'lecture-attachment-type-video' in elem_classes:
+            doc.add_paragraph("[Video Here]")
+            
         else:
             # Default: recurse into div's children
             for child in elem.find_all(recursive=False):
