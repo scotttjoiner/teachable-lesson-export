@@ -15,8 +15,6 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-print("🔔 RUNNING PATCHED SCRIPT - VERSION B!")
-
 # --- Configurable paths ---
 input_folder = "saved_html_lessons"
 processed_folder = "processed_html"
@@ -29,7 +27,8 @@ os.makedirs(output_folder, exist_ok=True)
 
 # --- Parse command line arguments ---
 parser = argparse.ArgumentParser(description="Export lessons from HTML to DOCX.")
-parser.add_argument("--nomedia", action="store_true", help="Skip downloading and embed images, extract video links, and preserve hyperlinks.")
+parser.add_argument("--nomedia", default=False, help="Skip downloading and embed images")
+parser.add_argument("--font", default=None, help="Override default font Helvetica")
 args = parser.parse_args()
 
 # --- Helper functions ---
@@ -149,7 +148,7 @@ def process_element(elem, doc):
 
         elif 'lecture-attachment-type-video' in elem_classes:
             doc.add_paragraph("[Video Here]")
-            
+
         else:
             # Default: recurse into div's children
             for child in elem.find_all(recursive=False):
@@ -228,11 +227,15 @@ def process_inline_contents(elem, para, doc, bold=False, italic=False):
 
         elif child.name == 'strong':
             if para:
+                para.add_run(' ')
                 process_inline_contents(child, para, doc, bold=True, italic=italic)
+                para.add_run(' ')
 
         elif child.name == 'em':
             if para:
+                para.add_run(' ')
                 process_inline_contents(child, para, doc, bold=bold, italic=True)
+                para.add_run(' ')
 
         elif child.name in ['span', 'br']:
             process_inline_contents(child, para, doc, bold=bold, italic=italic)
@@ -404,81 +407,64 @@ def handle_pdf_embed(elem, doc):
         para.add_run("Download here: ")
         add_hyperlink(para, download_link, download_link)
 
-# --- Main processing ---
-for filename in os.listdir(input_folder):
-    if filename.lower().endswith(".html"):
-        input_path = os.path.join(input_folder, filename)
+def process_file(filename):
+    input_path = os.path.join(input_folder, filename)
 
-        # Parse HTML
-        with open(input_path, 'r', encoding='utf-8') as file:
-            soup = BeautifulSoup(file, 'html5lib')
+    with open(input_path, 'r', encoding='utf-8') as file:
+        soup = BeautifulSoup(file, 'html5lib')
 
-        body = soup.body
-        if not body:
-            print(f"Warning: No <body> tag found in {filename}. Skipping.")
+    body = soup.body
+    if not body:
+        print(f"Warning: No <body> tag found in {filename}. Skipping.")
+        return
+
+    page_title = soup.title.string.strip() if soup.title and soup.title.string else filename.replace('.html', '')
+    lesson_folder_name = safe_filename(page_title)
+    lesson_folder = os.path.join(output_folder, lesson_folder_name)
+    os.makedirs(lesson_folder, exist_ok=True)
+    images_folder = os.path.join(lesson_folder, "images")
+    os.makedirs(images_folder, exist_ok=True)
+
+    doc = Document()
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Helvetica'
+
+    lesson_body = soup.find('div', class_='course-mainbar lecture-content')
+    if not lesson_body:
+        print(f"Warning: No lesson body found in {filename}. Skipping.")
+        return
+
+    print(f"Found {len(lesson_body.find_all('div', class_='lecture-attachment'))} lecture-attachment blocks.")
+    block_counter = 0
+    for block in lesson_body.find_all(recursive=False):
+        block_counter += 1
+        print(f"--- Processing content block {block_counter}---")
+
+        if block.name in ['script', 'meta', 'style']:
             continue
 
-        # Derive lesson title (use <title> tag or fallback to filename)
-        page_title = soup.title.string.strip() if soup.title and soup.title.string else filename.replace('.html', '')
-        lesson_folder_name = safe_filename(page_title)
-        lesson_folder = os.path.join(output_folder, lesson_folder_name)
-        os.makedirs(lesson_folder, exist_ok=True)
-        images_folder = os.path.join(lesson_folder, "images")
-        os.makedirs(images_folder, exist_ok=True)
-
-        # Create new Word document
-        doc = Document()
-        
-        # Set default document font (optional, if you want everything consistent)
-        style = doc.styles['Normal']
-        font = style.font
-        font.name = 'Helvetica'  # or 'Arial', 'Lato', etc.
-        #font.size = Pt(11)
-
-        # --- Find the lesson content area ---
-        lesson_body = soup.find('div', class_='course-mainbar lecture-content')
-        print(f"Found {len(lesson_body.find_all('div', class_='lecture-attachment'))} lecture-attachment blocks.")
-
-        if not lesson_body:
-            print(f"Warning: No lesson body found in {filename}. Skipping.")
+        first_child = block.find(recursive=False)
+        if first_child and first_child.has_attr('class') and 'comments' in first_child['class']:
+            print("Skipping comment-only block.")
             continue
 
-        # --- Find all real content blocks ---
-        attachment_blocks = lesson_body.find_all('div', class_='lecture-attachment')
-        if not attachment_blocks:
-            print(f"Warning: No lesson attachments found in {filename}. Skipping.")
-            continue
+        process_element(block, doc)
 
-        # --- Process all attachment blocks ---
-        block_counter = 0
-        for block in lesson_body.find_all(recursive=False): #attachment_blocks:
-            block_counter += 1
-            print(f"--- Processing content block {block_counter}---")
+    output_path = os.path.join(lesson_folder, f"{lesson_folder_name}.docx")
+    doc.save(output_path)
+    print(f"Saved: {output_path}")
 
-            if block.name in ['script', 'meta', 'style']:
-                # Skip non-content blocks
-                continue
+    processed_path = os.path.join(processed_folder, filename)
+    shutil.move(input_path, processed_path)
+    print(f"Moved: {filename} -> Processed folder")
 
-            # Before walking block contents, check if this block is a comment block
-            first_child = block.find(recursive=False)
+def main():
+    for filename in os.listdir(input_folder):
+        if filename.lower().endswith(".html"):
+            process_file(filename)
+    print("\nAll lessons processed!")
 
-            if first_child and first_child.has_attr('class') and 'comments' in first_child['class']:
-                print("Skipping comment-only block.")
-                continue
-
-            # Otherwise, this is real content — process it
-            process_element(block, doc)
-
-
-
-        # Save document
-        output_path = os.path.join(lesson_folder, f"{lesson_folder_name}.docx")
-        doc.save(output_path)
-        print(f"Saved: {output_path}")
-
-        # Move processed HTML
-        processed_path = os.path.join(processed_folder, filename)
-        shutil.move(input_path, processed_path)
-        print(f"Moved: {filename} -> Processed folder")
-
-print("\nAll lessons processed!")
+if __name__ == "__main__":
+    print("🔔 RUNNING HTML --> DOCX SCRIPT - VERSION B!")
+    main()
