@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Scott Joiner
 
 import os
-import argparse
+import click
 import pickle
 import tempfile
 from docx import Document
@@ -13,8 +13,8 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from tools.config import SCOPES
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 
 def collect_lesson_files(folder_path, sort_by='name'):
@@ -126,17 +126,21 @@ def upload_to_google_drive(filepath):
     print(f"\n📤 Uploaded to Google Docs: {uploaded.get('webViewLink')}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Merge and upload DOCX lessons to Google Drive")
-    parser.add_argument("folder_path", help="Path to folder with lesson .docx files (recursive)")
-    parser.add_argument("--merged_name", default=None, help="Filename for merged output (default: foldername.docx)")
-    parser.add_argument("--sort", choices=["name", "ctime"], default="name",
-                        help="How to sort lessons: 'name' or 'ctime' (default: name)")
-    args = parser.parse_args()
-
-    merged_name = args.merged_name or os.path.basename(os.path.normpath(args.folder_path)) + ".docx"
-    lesson_paths = collect_lesson_files(args.folder_path, sort_by=args.sort)
+@click.command(help="Merge and upload DOCX lessons to Google Drive")
+@click.argument("folder_path", type=click.Path(exists=True, file_okay=False))
+@click.option("--merged-name", default=None, help="Filename for merged output (default: foldername.docx)")
+@click.option("--sort", type=click.Choice(["name", "ctime"]), default="name",
+              help="How to sort lessons: 'name' or 'ctime' (default: name)")
+def main(folder_path, merged_name, sort):
+    merged_name = merged_name or os.path.basename(os.path.normpath(folder_path)) + ".docx"
+    lesson_paths = collect_lesson_files(folder_path, sort_by=sort)
     merged_file = merge_with_images(lesson_paths, merged_name)
 
     if merged_file:
         upload_to_google_drive(merged_file)
+
+
+if __name__ == "__main__":
+    main()
+
+    

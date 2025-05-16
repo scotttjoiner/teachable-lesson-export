@@ -1,6 +1,6 @@
 import os
 import shutil
-import argparse
+import click
 import requests
 import re
 import base64
@@ -10,26 +10,11 @@ import cairosvg
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup, NavigableString
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-# --- Configurable paths ---
-input_folder = "saved_html_lessons"
-processed_folder = "processed_html"
-output_folder = "converted_docs"
-
-# --- Setup ---
-os.makedirs(input_folder, exist_ok=True)
-os.makedirs(processed_folder, exist_ok=True)
-os.makedirs(output_folder, exist_ok=True)
-
-# --- Parse command line arguments ---
-parser = argparse.ArgumentParser(description="Export lessons from HTML to DOCX.")
-parser.add_argument("--nomedia", default=False, help="Skip downloading and embed images")
-parser.add_argument("--font", default=None, help="Override default font Helvetica")
-args = parser.parse_args()
+from tools import config
 
 # --- Helper functions ---
 def safe_filename(name):
@@ -420,7 +405,7 @@ def process_file(filename):
 
     page_title = soup.title.string.strip() if soup.title and soup.title.string else filename.replace('.html', '')
     lesson_folder_name = safe_filename(page_title)
-    lesson_folder = os.path.join(output_folder, lesson_folder_name)
+    lesson_folder = os.path.join(config.OUTPUT_FOLDER, lesson_folder_name)
     os.makedirs(lesson_folder, exist_ok=True)
     images_folder = os.path.join(lesson_folder, "images")
     os.makedirs(images_folder, exist_ok=True)
@@ -455,12 +440,20 @@ def process_file(filename):
     doc.save(output_path)
     print(f"Saved: {output_path}")
 
-    processed_path = os.path.join(processed_folder, filename)
+    processed_path = os.path.join(config.PROCESSED_FOLDER, filename)
     shutil.move(input_path, processed_path)
     print(f"Moved: {filename} -> Processed folder")
 
-def main():
-    for filename in os.listdir(input_folder):
+@click.command(
+        help="Convert HTML lessons to DOCX"
+)
+@click.option('--nomedia', is_flag=True, default=False, help='Skip downloading and embed images')
+@click.option('--font', default=None, help='Override default font Helvetica')
+@click.option("--workdir", default=None, help="Override default working directory")
+def main(nomedia, font, workdir):
+    config.init(workdir)
+    
+    for filename in os.listdir(config.INPUT_FOLDER):
         if filename.lower().endswith(".html"):
             process_file(filename)
     print("\nAll lessons processed!")
