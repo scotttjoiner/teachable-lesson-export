@@ -1,88 +1,79 @@
 # Harmony Tools
 
-This project provides command-line utilities to assist in converting and uploading lesson content exported from Teachable.
+Tools to convert Teachable HTML lessons to DOCX and upload merged documents to Google Docs.
 
-## Features
+## ✨ Features
+- Extracts lesson content from saved Teachable HTML files
+- Converts each lesson into a DOCX document
+- Optionally merges all `.docx` files into a single document
+- Uploads the merged document to Google Docs via the Drive API
+- Supports basic customization (e.g., sorting, merged filename)
 
-- Convert saved HTML lessons (e.g., from Teachable) to clean DOCX format
-- Upload DOCX lessons to Google Drive, converting to Google Docs format
-- Configurable working directory (default: `~/harmony-tools`)
+## 🛠️ Setup
 
-## Installation
-
-This project uses [Poetry](https://python-poetry.org/) for dependency management and CLI support.
-
-1. **Install Poetry** (if not already installed):
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
-   Or refer to [Poetry installation docs](https://python-poetry.org/docs/#installation).
-
-2. **Clone the repository and install dependencies:**
-   ```bash
-   git clone <your-repo-url>
-   cd harmony-tools
-   poetry install
-   ```
-
-3. **Activate the virtual environment (optional):**
-   ```bash
-   poetry shell
-   ```
-
-## CLI Usage
-
-The project includes two main tools:
-
-### 1. `html2doc`
-Convert a folder of exported HTML lessons into DOCX format.
-
+### 1. Clone the repository
 ```bash
-poetry run html2doc [--workdir <path>]
+git clone https://github.com/yourusername/harmony-tools.git
+cd harmony-tools
 ```
 
-- `--workdir` (optional): Override the default working directory (`~/harmony-tools`).
-
-This will:
-- Read from `~/harmony-tools/saved_html_lessons`
-- Create `.docx` files in `~/harmony-tools/converted_docs`
-- Move processed HTML to `~/harmony-tools/processed_html`
-
-### 2. `upload2drive`
-Merge and upload DOCX files to Google Drive (converted to Google Docs).
-
+### 2. Install dependencies using Poetry
 ```bash
-poetry run upload2drive [FOLDER_PATH] [--merged-name <filename>] [--sort <name|ctime>] [--workdir <path>]
+poetry install
 ```
 
-- `FOLDER_PATH`: Path to a folder of `.docx` files (recursively searched)
-- `--merged-name`: Optional output filename (default: folder name)
-- `--sort`: Sort files by `name` or `ctime` (default: `name`)
-- `--workdir`: Override working directory used for token/cache storage
+> ✅ This project uses [Poetry](https://python-poetry.org/) for dependency and virtual environment management.
 
-The first time you run this, you will be prompted to authenticate with Google and a `token.pickle` will be saved.
+### 3. Authenticate with Google
+Place your `credentials.json` file (from Google Cloud Console) in the working directory. A token will be stored after the first run to avoid reauthenticating.
 
-## Configuration
+## 📂 Working Directory
+By default, the following working directories are created in your home folder:
 
-You can define a `.env` file in the project root to override `WORKDIR` or other settings. For example:
+- `~/harmony-tools/saved_html_lessons`
+- `~/harmony-tools/converted_docs`
+- `~/harmony-tools/processed_html`
 
-```dotenv
-WORKDIR=/Users/yourname/Documents/lesson-processing
+You can override this location using the `--workdir` option.
+
+## ⚙️ Usage
+
+### Convert lessons from HTML to DOCX
+```bash
+poetry run html2doc
+```
+- Parses all files in `~/harmony-tools/saved_html_lessons`
+- Extracts lesson content
+- Creates Word documents in `~/harmony-tools/converted_docs`
+
+### Merge and upload to Google Docs
+```bash
+poetry run upload2drive
+```
+- Merges all `.docx` files in the output folder
+- Uploads the merged result to Google Docs
+
+### Optional arguments
+```bash
+poetry run upload2drive --help
+```
+```
+Usage: upload2drive [OPTIONS]
+
+  Merge and upload DOCX lessons to Google Drive
+
+Options:
+  --folder-path PATH  Path to folder with lesson .docx files (default: WORKDIR)
+  --merged-name TEXT  Filename for merged output (default: foldername.docx)
+  --sort [name|ctime] How to sort lessons: 'name' or 'ctime' (default: name)
 ```
 
-## Folder Structure
+## 📘 How It Works
+This tool recursively finds all `.docx` files in the specified folder, merges them into a single document (optionally sorted by filename or creation time), and uploads the result to Google Docs.
 
-```
-~/harmony-tools
-├── saved_html_lessons     # Input folder for html2doc
-├── converted_docs         # Output folder for generated DOCX files
-├── processed_html         # Moved HTML files after processing
-├── token.pickle           # Stored Google auth token (upload2drive)
-```
+- The default merged document name is based on the folder name (e.g., `my-lessons.docx`)
+- The output is saved locally and uploaded as a Google Doc
+- Only `.docx` files are processed; subfolders are not searched recursively
 
-## License
-
+## 📄 License
 MIT License
-
----
-This project was built by Scott Joiner to support custom content pipelines for education and coaching applications.

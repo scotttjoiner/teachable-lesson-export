@@ -101,6 +101,7 @@ def upload_to_google_drive(filepath):
     base_path = Path(config.WORKDIR)
     token_path = base_path / "token.pickle"
     creds_path = base_path / 'credentials.json'
+    filepath = os.path.abspath(filepath)
     
     if os.path.exists(token_path):
         with open(token_path, 'rb') as token:
@@ -146,11 +147,12 @@ def main(folder_path, merged_name, sort):
     config.init()
     
     folder_path = folder_path or config.OUTPUT_FOLDER 
+    
     merged_name = merged_name or os.path.basename(os.path.normpath(folder_path)) + ".docx"
     lesson_paths = collect_lesson_files(folder_path, sort_by=sort)
-    merged_file = merge_with_images(lesson_paths, merged_name)
-
-    print(f"Finding documents in: {folder_path}")
+    
+    output_path = Path(config.WORKDIR) / merged_name
+    merged_file = merge_with_images(lesson_paths, output_path)
 
     if merged_file:
         upload_to_google_drive(merged_file)
