@@ -1,126 +1,88 @@
-# Teachable Lesson Exporter & Google Drive Uploader
+# Harmony Tools
 
-This toolchain automates the conversion of Teachable course content into clean, structured Google Docs for collaboration, editing, or archival.
+This project provides command-line utilities to assist in converting and uploading lesson content exported from Teachable.
 
----
+## Features
 
-## 🧩 Components
+- Convert saved HTML lessons (e.g., from Teachable) to clean DOCX format
+- Upload DOCX lessons to Google Drive, converting to Google Docs format
+- Configurable working directory (default: `~/harmony-tools`)
 
-### 1. `html2doc.py` — Teachable HTML to DOCX Converter
+## Installation
 
-Converts exported HTML lessons from Teachable into well-formatted `.docx` files.
+This project uses [Poetry](https://python-poetry.org/) for dependency management and CLI support.
 
-- Extracts lesson content, preserving:
-  - Paragraphs
-  - Headings
-  - Lists
-  - Images (downloaded + embedded)
-  - Hyperlinks and basic formatting (bold, italics)
-- Outputs a folder structure like:
+1. **Install Poetry** (if not already installed):
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+   Or refer to [Poetry installation docs](https://python-poetry.org/docs/#installation).
 
-```
-converted_docs/
-  Lesson1/
-    lesson.docx
-  Lesson2/
-    lesson.docx
-  ...
-```
+2. **Clone the repository and install dependencies:**
+   ```bash
+   git clone <your-repo-url>
+   cd harmony-tools
+   poetry install
+   ```
 
----
+3. **Activate the virtual environment (optional):**
+   ```bash
+   poetry shell
+   ```
 
-### 2. `upload2drive.py` — Merge Lessons and Upload to Google Drive
+## CLI Usage
 
-Takes a folder of `.docx` files (like `converted_docs/`) and:
+The project includes two main tools:
 
-- Recursively finds all lesson files
-- Sorts them by:
-  - Filename (`--sort name`) *(default)*  
-  - Creation time (`--sort ctime`)
-- Merges into a single `.docx` with:
-  - Embedded images
-  - Table of contents
-  - Optional page breaks between lessons
-- Uploads as a Google Doc to your Drive
-- Outputs a shareable link
-
----
-
-## 📁 Project Layout
-
-```
-your-repo/
-├── src/
-│   ├── html2doc/
-│   │   └── html2doc.py
-│   └── upload2drive.py
-├── requirements.txt
-├── .gitignore
-├── credentials.json            # OAuth file from Google (not included)
-└── README.md
-```
-
----
-
-## 🚀 Getting Started
-
-### 1. Install dependencies
+### 1. `html2doc`
+Convert a folder of exported HTML lessons into DOCX format.
 
 ```bash
-pip install -r requirements.txt
+poetry run html2doc [--workdir <path>]
 ```
 
-### 2. Google API Setup (one-time)
+- `--workdir` (optional): Override the default working directory (`~/harmony-tools`).
 
-- Enable the **Google Drive API** in your Google Cloud Console
-- Download your OAuth `credentials.json`
-- Place it in the project root
+This will:
+- Read from `~/harmony-tools/saved_html_lessons`
+- Create `.docx` files in `~/harmony-tools/converted_docs`
+- Move processed HTML to `~/harmony-tools/processed_html`
 
----
-
-## 🔧 Usage
-
-### ✍️ Convert HTML to DOCX
+### 2. `upload2drive`
+Merge and upload DOCX files to Google Drive (converted to Google Docs).
 
 ```bash
-python src/html2doc/html2doc.py path/to/html_files/ --output_folder converted_docs/
+poetry run upload2drive [FOLDER_PATH] [--merged-name <filename>] [--sort <name|ctime>] [--workdir <path>]
 ```
 
-- Each HTML file gets parsed and saved as `lesson.docx` in its own folder.
-- Supports inline images, formatting, and layout fidelity.
+- `FOLDER_PATH`: Path to a folder of `.docx` files (recursively searched)
+- `--merged-name`: Optional output filename (default: folder name)
+- `--sort`: Sort files by `name` or `ctime` (default: `name`)
+- `--workdir`: Override working directory used for token/cache storage
 
----
+The first time you run this, you will be prompted to authenticate with Google and a `token.pickle` will be saved.
 
-### 📤 Merge + Upload to Google Drive
+## Configuration
 
-```bash
-python src/upload2drive.py converted_docs/ --merged_name Week3_Lessons.docx --sort name --add_page_break
+You can define a `.env` file in the project root to override `WORKDIR` or other settings. For example:
+
+```dotenv
+WORKDIR=/Users/yourname/Documents/lesson-processing
 ```
 
-**Options**:
-- `--merged_name`: name for the final merged `.docx` and uploaded file
-- `--sort`: `name` or `ctime`
-- `--add_page_break`: (flag) adds a page break between merged files
+## Folder Structure
 
----
-
-## 📎 Features
-
-- ✅ Parses HTML from Teachable downloads
-- ✅ Merges lessons into one document
-- ✅ Preserves images, formatting, headings
-- ✅ Uploads to Google Docs via OAuth
-- ✅ Adds Table of Contents
-- ✅ Clean structure, reusable for other platforms
-
----
-
-## 🧪 Example Workflow
-
-```bash
-# Convert HTML files to DOCX
-python src/html2doc/html2doc.py ./html_lessons/ --output_folder converted_docs/
-
-# Merge DOCX files and upload
-python src/upload2drive.py converted_docs/ --merged_name "Course Week 3" --sort ctime --add_page_break
 ```
+~/harmony-tools
+├── saved_html_lessons     # Input folder for html2doc
+├── converted_docs         # Output folder for generated DOCX files
+├── processed_html         # Moved HTML files after processing
+├── token.pickle           # Stored Google auth token (upload2drive)
+```
+
+## License
+
+MIT License
+
+---
+This project was built by Scott Joiner to support custom content pipelines for education and coaching applications.

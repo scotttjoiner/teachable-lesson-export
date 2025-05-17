@@ -1,3 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Scott Joiner
+
+# Needs to run first
+from harmony_tools import config
+
 import os
 import shutil
 import click
@@ -5,7 +11,6 @@ import requests
 import re
 import base64
 import tempfile
-import os
 import cairosvg
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup, NavigableString
@@ -14,7 +19,6 @@ from docx.shared import Inches, Pt
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from tools import config
 
 # --- Helper functions ---
 def safe_filename(name):
@@ -257,8 +261,9 @@ def parse_style_for_maxwidth(style_string):
     if match:
         try:
             return int(match.group(1))
-        except:
+        except:  # noqa: E722
             return None
+        
     return None
 
 def parse_style_for_dimensions(style_string):
@@ -393,7 +398,7 @@ def handle_pdf_embed(elem, doc):
         add_hyperlink(para, download_link, download_link)
 
 def process_file(filename):
-    input_path = os.path.join(input_folder, filename)
+    input_path = os.path.join(config.INPUT_FOLDER, filename)
 
     with open(input_path, 'r', encoding='utf-8') as file:
         soup = BeautifulSoup(file, 'html5lib')

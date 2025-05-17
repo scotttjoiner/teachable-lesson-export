@@ -1,0 +1,67 @@
+[project]
+name = "harmony-tools"
+version = "0.1.0"
+description = "Tools to convert Teachable HTML to DOCX and to upload to drive and convert to Google Doc format."
+authors = [
+    {name = "Scott Joiner", email = "scotttjoiner@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "beautifulsoup4",
+    "bs4",
+    "cachetools",
+    "cairocffi",
+    "CairoSVG",
+    "certifi",
+    "cffi",
+    "charset-normalizer",
+    "click",
+    "cssselect2",
+    "defusedxml",
+    "docx",
+    "docxcompose",
+    "google-api-core",
+    "google-api-python-client",
+    "google-auth",
+    "google-auth-httplib2",
+    "google-auth-oauthlib",
+    "googleapis-common-protos",
+    "html5lib",
+    "httplib2",
+    "idna",
+    "lxml",
+    "oauthlib",
+    "pillow",
+    "proto-plus",
+    "protobuf",
+    "pyasn1",
+    "pyasn1_modules",
+    "pycairo",
+    "pycparser",
+    "pyparsing",
+    "python-docx",
+    "requests",
+    "requests-oauthlib",
+    "rsa",
+    "six",
+    "soupsieve",
+    "tinycss2",
+    "typing_extensions",
+    "uritemplate",
+    "urllib3",
+    "webencodings",
+    "python-dotenv (>=1.1.0,<2.0.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+html2doc = "harmony_tools.html2doc:main"
+upload2drive = "harmony_tools.upload2drive:main"
+
+[tool.poetry]
+packages = [{ include = "harmony_tools", from = "src" }]

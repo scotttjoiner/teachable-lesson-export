@@ -5,6 +5,7 @@ import os
 import click
 import pickle
 import tempfile
+from pathlib import Path
 from docx import Document
 from docxcompose.composer import Composer
 from docx.oxml import OxmlElement
@@ -13,7 +14,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from tools.config import SCOPES
+from harmony_tools import config #.config import SCOPES, WORKDIR, OUTPUT_FOLDER, init
 
 
 
@@ -97,21 +98,25 @@ def merge_with_images(docx_files, output_filename):
 
 def upload_to_google_drive(filepath):
     creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    base_path = Path(config.WORKDIR)
+    token_path = base_path / "token.pickle"
+    creds_path = base_path / 'credentials.json'
+    
+    if os.path.exists(token_path):
+        with open(token_path, 'rb') as token:
             creds = pickle.load(token)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            if not os.path.exists('credentials.json'):
+            if not os.path.exists(creds_path):
                 print("❌ Missing 'credentials.json'. Download it from Google Cloud Console.")
                 return
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(creds_path, config.SCOPES)
             creds = flow.run_local_server(port=0)
 
-        with open('token.pickle', 'wb') as token:
+        with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
 
     service = build('drive', 'v3', credentials=creds)
@@ -127,14 +132,25 @@ def upload_to_google_drive(filepath):
 
 
 @click.command(help="Merge and upload DOCX lessons to Google Drive")
-@click.argument("folder_path", type=click.Path(exists=True, file_okay=False))
+@click.option(
+    "--folder-path",
+    type=click.Path(exists=True, file_okay=False),
+    #default=str(config.OUTPUT_FOLDER),
+    show_default=True,
+    help="Path to folder with lesson .docx files (default: WORKDIR)"
+)
 @click.option("--merged-name", default=None, help="Filename for merged output (default: foldername.docx)")
 @click.option("--sort", type=click.Choice(["name", "ctime"]), default="name",
               help="How to sort lessons: 'name' or 'ctime' (default: name)")
 def main(folder_path, merged_name, sort):
+    config.init()
+    
+    folder_path = folder_path or config.OUTPUT_FOLDER 
     merged_name = merged_name or os.path.basename(os.path.normpath(folder_path)) + ".docx"
     lesson_paths = collect_lesson_files(folder_path, sort_by=sort)
     merged_file = merge_with_images(lesson_paths, merged_name)
+
+    print(f"Finding documents in: {folder_path}")
 
     if merged_file:
         upload_to_google_drive(merged_file)
