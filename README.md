@@ -24,6 +24,30 @@ poetry install
 
 > ✅ This project uses [Poetry](https://python-poetry.org/) for dependency and virtual environment management.
 
+---
+
+### 🧪 Alternate (without Poetry)
+You can also use this project with standard `pip`, without needing to install Poetry.
+
+1. **Create a virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
+
+2. **Install in editable mode**
+   ```bash
+   pip install -e .
+   ```
+
+3. **Run tools**
+   ```bash
+   html2doc --help
+   upload2drive --help
+   ```
+
+---
+
 ### 3. Authenticate with Google
 Place your `credentials.json` file (from Google Cloud Console) in the working directory. A token will be stored after the first run to avoid reauthenticating.
 
