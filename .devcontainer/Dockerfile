@@ -11,11 +11,18 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry (official method)
-ENV POETRY_VERSION=1.8.2
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# Install Poetry for the vscode user
+USER vscode
 
-# Add poetry to PATH
-ENV PATH="/root/.local/bin:$PATH"
+ENV POETRY_VERSION=2.1.3
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+
+# Add Poetry to PATH immediately (for non-login shells)
+ENV PATH="/home/vscode/.local/bin:$PATH"
 
 # Optional: Set Poetry to not create virtual environments inside the container
-RUN poetry config virtualenvs.in-project true
+RUN /home/vscode/.local/bin/poetry config virtualenvs.in-project true
+
+# Switch back to root if needed for later setup
+USER root

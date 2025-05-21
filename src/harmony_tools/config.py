@@ -4,6 +4,7 @@
 import os
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -13,7 +14,7 @@ PROCESSED_FOLDER = "processed_html"
 OUTPUT_FOLDER = "converted_docs"
 WORKDIR = None
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 
 def init(base_dir=None):
@@ -22,7 +23,9 @@ def init(base_dir=None):
     """
     global INPUT_FOLDER, PROCESSED_FOLDER, OUTPUT_FOLDER, WORKDIR
 
-    WORKDIR = os.path.abspath(base_dir) if base_dir else os.path.expanduser("~/harmony-tools")
+    WORKDIR = (
+        os.path.abspath(base_dir) if base_dir else os.path.expanduser("~/harmony-tools")
+    )
     INPUT_FOLDER = os.path.join(WORKDIR, "saved_html_lessons")  # noqa: F841
     PROCESSED_FOLDER = os.path.join(WORKDIR, "processed_html")  # noqa: F841
     OUTPUT_FOLDER = os.path.join(WORKDIR, "converted_docs")  # noqa: F841

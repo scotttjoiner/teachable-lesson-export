@@ -65,3 +65,9 @@ upload2drive = "harmony_tools.upload2drive:main"
 
 [tool.poetry]
 packages = [{ include = "harmony_tools", from = "src" }]
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+flake8 = "^7.2.0"
+
+[tool.flake8]
+ignore = ["E501"]
