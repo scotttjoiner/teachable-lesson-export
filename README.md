@@ -21,7 +21,6 @@ cd harmony-tools
 ```bash
 poetry install
 ```
-
 > ✅ This project uses [Poetry](https://python-poetry.org/) for dependency and virtual environment management.
 
 ---
@@ -49,16 +48,30 @@ You can also use this project with standard `pip`, without needing to install Po
 ---
 
 ### 3. Authenticate with Google
-Place your `credentials.json` file (from Google Cloud Console) in the working directory. A token will be stored after the first run to avoid reauthenticating.
+To upload files to Google Docs, you'll need a `credentials.json` file from the Google Cloud Console:
+
+1. Visit the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a project and enable the **Google Drive API**.
+3. Create **OAuth 2.0 Client ID** credentials for a **Desktop Application**.
+4. Download the `credentials.json` file.
+
+Place this file in the working directory (default: `~/harmony-tools/`).  
+The first time you run `upload2drive`, it will prompt you to log in. Your access token will be saved to `token.pickle` in the same folder for future runs.
 
 ## 📂 Working Directory
-By default, the following working directories are created in your home folder:
+By default, the following folders are created under your home directory (`~/harmony-tools/`):
 
-- `~/harmony-tools/saved_html_lessons`
-- `~/harmony-tools/converted_docs`
-- `~/harmony-tools/processed_html`
+- `saved_html_lessons` – where you put raw Teachable HTML files
+- `converted_docs` – where the generated `.docx` files are saved
+- `processed_html` – where processed HTML files are moved after conversion
 
-You can override this location using the `--workdir` option.
+> These directories are automatically created if they don't exist.
+
+To change the location of the working directory, use the `--workdir` option:
+```bash
+html2doc --workdir /custom/path
+upload2drive --workdir /custom/path
+```
 
 ## ⚙️ Usage
 
