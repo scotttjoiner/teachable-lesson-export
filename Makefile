@@ -29,7 +29,7 @@ format:
 	$(POETRY) run black src tests
 
 test:
-	$(POETRY) run pytest
+	PYTHONPATH=src $(POETRY) run pytest
 
 requirements:
 	$(POETRY) export -f requirements.txt --output requirements.txt --without-hashes

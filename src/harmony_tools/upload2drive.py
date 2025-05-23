@@ -127,11 +127,12 @@ def upload_to_google_drive(filepath):
         "name": os.path.splitext(os.path.basename(filepath))[0],
         "mimeType": "application/vnd.google-apps.document",
     }
+    
     media = MediaFileUpload(
         filepath,
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
-
+    
     uploaded = (
         service.files()
         .create(body=file_metadata, media_body=media, fields="id,webViewLink")
