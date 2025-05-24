@@ -433,7 +433,7 @@ def process_file(filename):
         else filename.replace(".html", "")
     )
     lesson_folder_name = safe_filename(page_title)
-    lesson_folder = str(config.output_folder / lesson_folder_name) 
+    lesson_folder = str(config.output_folder / lesson_folder_name)
     os.makedirs(lesson_folder, exist_ok=True)
     images_folder = os.path.join(lesson_folder, "images")
     os.makedirs(images_folder, exist_ok=True)
@@ -486,7 +486,7 @@ def process_file(filename):
 @click.option("--font", default=None, help="Override default font Helvetica")
 @click.option("--workdir", default=None, help="Override default working directory")
 def main(nomedia, font, workdir):
-    
+
     config.load(workdir)
 
     for file_path in config.input_folder.glob("*.html"):

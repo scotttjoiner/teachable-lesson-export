@@ -4,14 +4,16 @@ import click
 from pathlib import Path
 
 
-CONFIG_HOME = Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config")) / "harmony-tools"
-CREDENTIALS_FILE = Path(os.getenv("GOOGLE_CREDENTIALS_PATH", CONFIG_HOME / "credentials.json"))
+CONFIG_HOME = (
+    Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config")) / "harmony-tools"
+)
+CREDENTIALS_FILE = Path(
+    os.getenv("GOOGLE_CREDENTIALS_PATH", CONFIG_HOME / "credentials.json")
+)
 TOKEN_FILE = CONFIG_HOME / "token.pickle"
 CONFIG_FILE = CONFIG_HOME / "config.json"
 DEFAULT_WORKDIR = Path.home() / "harmony-tools"
-SCOPES = [
-    "https://www.googleapis.com/auth/drive.file"
-]
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 
 class Config:
@@ -64,7 +66,7 @@ class Config:
         self._nomedia = False
 
     def load(self, workdir=None, force=False, font="Helvetica", nomedia=False):
-        
+
         if self._loaded and not force:
             return self
 
@@ -120,8 +122,13 @@ class Config:
 # Global singleton instance
 config = Config()
 
+
 @click.command(help="Initialize the harmony-tools working directory.")
-@click.option("--workdir", default=None, type=click.Path(file_okay=False), help="Override working directory")
+@click.option(
+    "--workdir",
+    default=None,
+    type=click.Path(file_okay=False),
+    help="Override working directory",
+)
 def main(workdir=None):
     config.load(workdir).save()
-

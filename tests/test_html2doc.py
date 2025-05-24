@@ -3,6 +3,7 @@ import os
 from harmony_tools import html2doc
 from harmony_tools.config import config
 
+
 def test_process_file_creates_output(monkeypatch):
     # Setup temp input and output dirs
     with tempfile.TemporaryDirectory() as tmp_input:

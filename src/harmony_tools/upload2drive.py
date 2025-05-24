@@ -5,7 +5,6 @@ import os
 import click
 import pickle
 import tempfile
-from pathlib import Path
 from docx import Document
 from docxcompose.composer import Composer
 from docx.oxml import OxmlElement
@@ -112,7 +111,9 @@ def upload_to_google_drive(filepath):
                     "❌ Missing 'credentials.json'. Download it from Google Cloud Console."
                 )
                 return
-            flow = InstalledAppFlow.from_client_secrets_file(config.google_credentials_path, SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(
+                config.google_credentials_path, SCOPES
+            )
             creds = flow.run_local_server(port=0)
 
         with open(config.token_file, "wb") as token:
