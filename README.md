@@ -41,6 +41,7 @@ You can also use this project with standard `pip`, without needing to install Po
 
 3. **Run tools**
    ```bash
+   harmony-init --help
    html2doc --help
    upload2drive --help
    ```

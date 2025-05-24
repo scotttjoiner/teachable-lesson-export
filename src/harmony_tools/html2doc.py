@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Scott Joiner
 
-# Needs to run first
-from harmony_tools import config
-
 import os
 import shutil
 import click
@@ -19,6 +16,7 @@ from docx.shared import Inches, Pt
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from harmony_tools.config import config
 
 
 # --- Helper functions ---
@@ -419,7 +417,7 @@ def handle_pdf_embed(elem, doc):
 
 
 def process_file(filename):
-    input_path = os.path.join(config.INPUT_FOLDER, filename)
+    input_path = str(config.input_folder / filename)
 
     with open(input_path, "r", encoding="utf-8") as file:
         soup = BeautifulSoup(file, "html5lib")
@@ -435,7 +433,7 @@ def process_file(filename):
         else filename.replace(".html", "")
     )
     lesson_folder_name = safe_filename(page_title)
-    lesson_folder = os.path.join(config.OUTPUT_FOLDER, lesson_folder_name)
+    lesson_folder = str(config.output_folder / lesson_folder_name) 
     os.makedirs(lesson_folder, exist_ok=True)
     images_folder = os.path.join(lesson_folder, "images")
     os.makedirs(images_folder, exist_ok=True)
@@ -476,26 +474,27 @@ def process_file(filename):
     doc.save(output_path)
     print(f"Saved: {output_path}")
 
-    processed_path = os.path.join(config.PROCESSED_FOLDER, filename)
+    processed_path = str(config.processed_folder / filename)
     shutil.move(input_path, processed_path)
     print(f"Moved: {filename} -> Processed folder")
 
 
-@click.command(help="Convert HTML lessons to DOCX")
+@click.command(help="Convert saved Teachable HTML lessons to DOCX")
 @click.option(
     "--nomedia", is_flag=True, default=False, help="Skip downloading and embed images"
 )
 @click.option("--font", default=None, help="Override default font Helvetica")
 @click.option("--workdir", default=None, help="Override default working directory")
 def main(nomedia, font, workdir):
-    config.init(workdir)
+    
+    config.load(workdir)
 
-    for filename in os.listdir(config.INPUT_FOLDER):
-        if filename.lower().endswith(".html"):
-            process_file(filename)
+    for file_path in config.input_folder.glob("*.html"):
+        process_file(str(file_path))
+
     print("\nAll lessons processed!")
 
 
 if __name__ == "__main__":
-    print("🔔 RUNNING HTML --> DOCX SCRIPT - VERSION B!")
+    print("🔔 RUNNING HTML --> DOCX SCRIPT")
     main()

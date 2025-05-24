@@ -62,6 +62,7 @@ build-backend = "poetry.core.masonry.api"
 [project.scripts]
 html2doc = "harmony_tools.html2doc:main"
 upload2drive = "harmony_tools.upload2drive:main"
+harmony-init = "harmony_tools.config:main"
 
 [tool.poetry]
 packages = [{ include = "harmony_tools", from = "src" }]

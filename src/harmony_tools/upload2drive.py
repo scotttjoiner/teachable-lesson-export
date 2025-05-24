@@ -14,7 +14,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from harmony_tools import config  # .config import SCOPES, WORKDIR, OUTPUT_FOLDER, init
+from harmony_tools.config import config, SCOPES 
 
 
 def collect_lesson_files(folder_path, sort_by="name"):
@@ -97,7 +97,7 @@ def merge_with_images(docx_files, output_filename):
 
 def upload_to_google_drive(filepath):
     creds = None
-    base_path = Path(config.WORKDIR)
+    base_path = config.workdir
     token_path = base_path / "token.pickle"
     creds_path = base_path / "credentials.json"
     filepath = os.path.abspath(filepath)
@@ -115,7 +115,7 @@ def upload_to_google_drive(filepath):
                     "❌ Missing 'credentials.json'. Download it from Google Cloud Console."
                 )
                 return
-            flow = InstalledAppFlow.from_client_secrets_file(creds_path, config.SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
 
         with open(token_path, "wb") as token:
@@ -127,12 +127,12 @@ def upload_to_google_drive(filepath):
         "name": os.path.splitext(os.path.basename(filepath))[0],
         "mimeType": "application/vnd.google-apps.document",
     }
-    
+
     media = MediaFileUpload(
         filepath,
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
-    
+
     uploaded = (
         service.files()
         .create(body=file_metadata, media_body=media, fields="id,webViewLink")
@@ -161,16 +161,16 @@ def upload_to_google_drive(filepath):
     help="How to sort lessons: 'name' or 'ctime' (default: name)",
 )
 def main(folder_path, merged_name, sort):
-    config.init()
+    config.load()
 
-    folder_path = folder_path or config.OUTPUT_FOLDER
+    folder_path = folder_path or config.output_folder
 
     merged_name = (
         merged_name or os.path.basename(os.path.normpath(folder_path)) + ".docx"
     )
     lesson_paths = collect_lesson_files(folder_path, sort_by=sort)
 
-    output_path = Path(config.WORKDIR) / merged_name
+    output_path = config.workdir / merged_name
     merged_file = merge_with_images(lesson_paths, output_path)
 
     if merged_file:
