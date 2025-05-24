@@ -1,4 +1,6 @@
-# Harmony Tools
+
+
+![Build](https://github.com/scotttjoiner/teachable-lesson-export/actions/workflows/makefile.yml/badge.svg)
 
 Tools to convert Teachable HTML lessons to DOCX and upload merged documents to Google Docs.
 
