@@ -1,10 +1,13 @@
 import os
 import json
+import click
 from pathlib import Path
 
-import click
 
-CONFIG_FILE = Path.home() / ".harmony-tools" / "config.json"
+CONFIG_HOME = Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config")) / "harmony-tools"
+CREDENTIALS_FILE = Path(os.getenv("GOOGLE_CREDENTIALS_PATH", CONFIG_HOME / "credentials.json"))
+TOKEN_FILE = CONFIG_HOME / "token.pickle"
+CONFIG_FILE = CONFIG_HOME / "config.json"
 DEFAULT_WORKDIR = Path.home() / "harmony-tools"
 SCOPES = [
     "https://www.googleapis.com/auth/drive.file"
@@ -42,6 +45,14 @@ class Config:
     def nomedia(self):
         self._ensure_loaded()
         return self._nomedia
+
+    @property
+    def google_credentials_path(self):
+        return CREDENTIALS_FILE
+
+    @property
+    def token_file(self):
+        return TOKEN_FILE
 
     def __init__(self):
         self._loaded = False

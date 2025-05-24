@@ -14,7 +14,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from harmony_tools.config import config, SCOPES 
+from harmony_tools.config import config, SCOPES
 
 
 def collect_lesson_files(folder_path, sort_by="name"):
@@ -97,28 +97,25 @@ def merge_with_images(docx_files, output_filename):
 
 def upload_to_google_drive(filepath):
     creds = None
-    base_path = config.workdir
-    token_path = base_path / "token.pickle"
-    creds_path = base_path / "credentials.json"
     filepath = os.path.abspath(filepath)
 
-    if os.path.exists(token_path):
-        with open(token_path, "rb") as token:
+    if os.path.exists(config.token_file):
+        with open(config.token_file, "rb") as token:
             creds = pickle.load(token)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            if not os.path.exists(creds_path):
+            if not os.path.exists(config.google_credentials_path):
                 print(
                     "❌ Missing 'credentials.json'. Download it from Google Cloud Console."
                 )
                 return
-            flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(config.google_credentials_path, SCOPES)
             creds = flow.run_local_server(port=0)
 
-        with open(token_path, "wb") as token:
+        with open(config.token_file, "wb") as token:
             pickle.dump(creds, token)
 
     service = build("drive", "v3", credentials=creds)
