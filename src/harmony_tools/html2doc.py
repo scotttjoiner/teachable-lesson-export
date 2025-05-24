@@ -124,7 +124,7 @@ def process_element(elem, doc):
     elif elem.name == "ol":
         handle_ordered_list(elem, doc)
 
-    elif elem.name == "img":
+    elif elem.name == "img" and not config.nomedia:
         # Standalone block-level image
         para = doc.add_paragraph()
         handle_image(elem, para, doc)
@@ -441,7 +441,7 @@ def process_file(filename):
     doc = Document()
     style = doc.styles["Normal"]
     font = style.font
-    font.name = "Helvetica"
+    font.name = config.font
 
     lesson_body = soup.find("div", class_="course-mainbar lecture-content")
     if not lesson_body:

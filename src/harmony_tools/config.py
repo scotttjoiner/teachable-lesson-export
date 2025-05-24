@@ -33,22 +33,34 @@ class Config:
         self._ensure_loaded()
         return self._processed_folder
 
+    @property
+    def font(self):
+        self._ensure_loaded()
+        return self._font
+
+    @property
+    def nomedia(self):
+        self._ensure_loaded()
+        return self._nomedia
+
     def __init__(self):
         self._loaded = False
         self._workdir = None
         self._input_folder = None
         self._output_folder = None
         self._processed_folder = None
+        self._font = "Helvetica"
+        self._nomedia = False
 
-    def load(self, cli_arg=None, force=False):
+    def load(self, workdir=None, force=False, font="Helvetica", nomedia=False):
         
         if self._loaded and not force:
             return self
 
         # Fallback order
         workdir = (
-            Path(cli_arg)
-            if cli_arg
+            Path(workdir)
+            if workdir
             else (
                 Path(os.environ.get("HARMONY_WORKDIR"))
                 if os.environ.get("HARMONY_WORKDIR")
