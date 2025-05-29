@@ -8,7 +8,7 @@ import requests
 import re
 import base64
 import tempfile
-import cairosvg
+import nocairosvg
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup, NavigableString
 from docx import Document
@@ -38,7 +38,7 @@ def svg_to_png_bytes(svg_html):
                 1,
             )
 
-        png_data = cairosvg.svg2png(bytestring=svg_html.encode("utf-8"))
+        png_data = nocairosvg.svg2png(bytestring=svg_html.encode("utf-8"))
         return png_data
 
     except Exception as e:
@@ -247,12 +247,12 @@ def process_inline_contents(elem, para, doc, bold=False, italic=False):
                 handle_image(child, para, doc)
 
         elif child.name == "svg":
-            # if para:
-            #    svg_html = str(child)
-            #    png_bytes = svg_to_png_bytes(svg_html)
-            #    if png_bytes:
-            #        width_inches, height_inches = extract_svg_dimensions(svg_html)
-            #        insert_png_into_paragraph(png_bytes, para, width_inches, height_inches)
+            if para:
+               svg_html = str(child)
+               png_bytes = svg_to_png_bytes(svg_html)
+               if png_bytes:
+                   width_inches, height_inches = 1.0, 1.0 #extract_svg_dimensions(svg_html)
+                   insert_png_into_paragraph(png_bytes, para, width_inches, height_inches)
             continue
 
         elif child.name in ["math", "canvas"]:

@@ -13,7 +13,6 @@ dependencies = [
     "bs4",
     "cachetools",
     "cairocffi",
-    "CairoSVG",
     "certifi",
     "cffi",
     "charset-normalizer",
@@ -52,7 +51,8 @@ dependencies = [
     "uritemplate",
     "urllib3",
     "webencodings",
-    "python-dotenv (>=1.1.0,<2.0.0)"
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "nocairosvg (>=2024,<2025)"
 ]
 
 [build-system]
