@@ -247,12 +247,13 @@ def process_inline_contents(elem, para, doc, bold=False, italic=False):
                 handle_image(child, para, doc)
 
         elif child.name == "svg":
+            continue  # Ignore SVGs in inline context
             if para:
                svg_html = str(child)
                png_bytes = svg_to_png_bytes(svg_html)
                if png_bytes:
-                   width_inches, height_inches = 1.0, 1.0 #extract_svg_dimensions(svg_html)
-                   insert_png_into_paragraph(png_bytes, para, width_inches, height_inches)
+                   #width_inches, height_inches = 1.0, 1.0 #extract_svg_dimensions(svg_html)
+                   insert_png_into_paragraph(png_bytes, para)
             continue
 
         elif child.name in ["math", "canvas"]:
@@ -490,7 +491,7 @@ def main(nomedia, font, workdir):
     config.load(workdir)
 
     for file_path in config.input_folder.glob("*.html"):
-        process_file(str(file_path))
+        process_file(file_path.name)
 
     print("\nAll lessons processed!")
 
